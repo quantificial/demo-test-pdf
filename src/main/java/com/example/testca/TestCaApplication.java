@@ -1,11 +1,13 @@
 package com.example.testca;
 
+import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Base64;
 import java.util.Map;
 
@@ -37,12 +39,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.itextpdf.forms.PdfAcroForm;
 import com.itextpdf.forms.fields.PdfFormField;
-import com.itextpdf.io.font.FontConstants;
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.font.PdfFontFactory.EmbeddingStrategy;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -73,26 +75,33 @@ public class TestCaApplication implements CommandLineRunner {
 		
 		//PdfWriter.getInstance(document, new FileOutputStream(new File(FILE_NAME)));
 	
+		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+		
 		PdfDocument pdf =
-			    new PdfDocument(new PdfReader(FILE_NAME), new PdfWriter(OUTPUT_NAME));
+			    new PdfDocument(new PdfReader(FILE_NAME), new PdfWriter(byteArrayOutputStream));
+		
 		
 			PdfAcroForm form = PdfAcroForm.getAcroForm(pdf, true);
 			Map<String, PdfFormField> fields = form.getFormFields();
 
 			//PdfFont font = PdfFontFactory.createFont(FontConstants.HELVETICA_BOLD);   
-			String fontPath = "c:/projects/kaiu.ttf";
+			//String fontPath = "c:/projects/kaiu.ttf";
 			//String fontPath = "c:/projects/NotoSans-Regular.ttf";
+			String fontPath = "c:/projects/NotoSansTC-Regular.otf";
 
 			//String fontPath = "c:/projects/mingliub.ttc";
 			
-			PdfFont fontChinese = PdfFontFactory.createFont(fontPath, PdfEncodings.IDENTITY_H, true);
+			PdfFont fontChinese = PdfFontFactory.createFont(fontPath, PdfEncodings.IDENTITY_H, EmbeddingStrategy.FORCE_EMBEDDED);
+						
 			
-			fields.get("text_a").setFont(fontChinese).setBorderWidth(0);
+			
+			fields.get("text_a").setFont(fontChinese).setBorderWidth(0).setFontSize(10);
 
-			fields.get("text_a").setValue("中文字..");
+			fields.get("text_a").setValue("中文字..汴岫占河峙技占靡技回找");
 			//fields.get("text_a").setValue("This is testing..");
 
-			fields.get("text_b").setValue("This is testing..");
+			fields.get("text_b").setBorderWidth(0);
+			fields.get("text_b").setValue("This ixs testing..");
 			
 			
 			
@@ -105,7 +114,7 @@ public class TestCaApplication implements CommandLineRunner {
 			ImageData rawImage = ImageDataFactory.create(ba);
 			Image image = new Image(rawImage);
 			
-			image.setFixedPosition(0, 500);
+			image.setFixedPosition(100, 500);
 			image.scaleToFit(200, 100);
 			
 			Document document = new Document(pdf);      
@@ -120,6 +129,18 @@ public class TestCaApplication implements CommandLineRunner {
 			pdf.close();
 		
 			document.close();
+			
+			
+			
+			byte[] bytes = byteArrayOutputStream.toByteArray();
+			
+			Files.write(new File(OUTPUT_NAME).toPath(), bytes);
+			
+			
+			// produce the base64 encoded pdf file
+			String base64output = Base64.getEncoder().encodeToString(bytes);		
+			System.out.println("output: " + base64output);
+			
 	}
 
 	
