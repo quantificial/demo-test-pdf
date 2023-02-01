@@ -45,9 +45,11 @@ import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.font.PdfFontFactory.EmbeddingStrategy;
+import com.itextpdf.kernel.pdf.EncryptionConstants;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.WriterProperties;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
 
@@ -76,9 +78,20 @@ public class TestCaApplication implements CommandLineRunner {
 		//PdfWriter.getInstance(document, new FileOutputStream(new File(FILE_NAME)));
 	
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			
+		// Apply password to PDF ///////////////////////////////////////////////
+		
+		//String userPass = "abcd";
+		String userPass = "";
+		WriterProperties props = new WriterProperties()
+		        .setStandardEncryption(userPass.getBytes(), null, EncryptionConstants.ALLOW_PRINTING,
+		                EncryptionConstants.ENCRYPTION_AES_128 | EncryptionConstants.DO_NOT_ENCRYPT_METADATA);
+		
+		PdfWriter pdfWriter = new PdfWriter(byteArrayOutputStream, props); 
 		
 		PdfDocument pdf =
-			    new PdfDocument(new PdfReader(FILE_NAME), new PdfWriter(byteArrayOutputStream));
+			    new PdfDocument(new PdfReader(FILE_NAME), pdfWriter);
+		
 		
 		
 			PdfAcroForm form = PdfAcroForm.getAcroForm(pdf, true);
@@ -92,7 +105,7 @@ public class TestCaApplication implements CommandLineRunner {
 			//String fontPath = "c:/projects/mingliub.ttc";
 			
 			PdfFont fontChinese = PdfFontFactory.createFont(fontPath, PdfEncodings.IDENTITY_H, EmbeddingStrategy.FORCE_EMBEDDED);
-						
+
 			
 			
 			fields.get("text_a").setFont(fontChinese).setBorderWidth(0).setFontSize(10);
